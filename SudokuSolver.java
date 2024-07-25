@@ -1,28 +1,18 @@
-
-public class SudokuSolver {
+//package PRODIGY_04;
+public class SudokuSolver
+{
 
 	//size of 2D matrix
 	static int size = 9;
 
-	/* Takes a partially filled-in grid and attempts
-	to assign values to all unassigned locations in
-	such a way to meet the requirements for
-	Sudoku solution (non-duplication across rows,
-	columns, and boxes) */
-	static boolean solveSudoku(int grid[][], int row, int column)
+	//solving partially filled sudoku grid
+	static boolean solve(int grid[][], int row, int column)
 	{
-
-		/*if we have reached the 8th
-		row and 9th column (0
-		indexed matrix) ,
-		we are returning true to avoid further
-		backtracking	 */
+		//if we have reached the 8th row and 9th column to avoid further backtracking
 		if (row == size - 1 && column == size)
 			return true;
 
-		// Check if column value becomes 9 ,
-		// we move to next row
-		// and column start from 0
+		// column value is 9 move to next row, and column start from zero
 		if (column == size)
         {
 			row++;
@@ -34,80 +24,63 @@ public class SudokuSolver {
 		// contains value >0, we iterate
 		// for next column
 		if (grid[row][column] != 0)
-			return solveSudoku(grid, row, column + 1);
+			return solve(grid, row, column + 1);
 
-		for (int number = 1; number < 10; number++) {
+		for (int numberToBeAdded = 1; numberToBeAdded< 10; numberToBeAdded++) {
 
-			// Check if it is safe to place
-			// the num (1-9) in the
-			// given row ,col ->we move to next column
-			if (canAddToGrid(grid, row, column, number))
+			// Check if number can be added that is in the range of 1-9 in the given row, if not move to next column
+			if (canAddToGrid(grid, row, column, numberToBeAdded))
             {
+                // number added to the current column and row
+				grid[row][column] = numberToBeAdded;
 
-				/* assigning the num in the current
-				(row,col) position of the grid and
-				assuming our assigned num in the position
-				is correct */
-				grid[row][column] = number;
-
-				// Checking for next
-				// possibility with next column
-				if (solveSudoku(grid, row, column + 1))
+				// check if can be added to the next column
+				if (solve(grid, row, column + 1))
 					return true;
 			}
-			/* removing the assigned num , since our
-			assumption was wrong , and we go for next
-			assumption with diff num value */
+			//resetting the assumption of numberToBeAdded
 			grid[row][column] = 0;
 		}
 		return false;
 	}
 
-	/* A utility function to print grid */
-	static void print(int[][] grid)
+	/* function to print grid */
+	static void showGrid(int[][] grid)
 	{
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i < size; i++)
+        {
 			for (int j = 0; j < size; j++)
 				System.out.print(grid[i][j] + " ");
 			System.out.println();
 		}
 	}
 
-	// Check whether it will be legal
-	// to assign num to the
-	// given row, col
+	//check whether a number can be added at a specific location(row,col)
 	static boolean canAddToGrid(int[][] grid, int row, int column,
 						int numberToAdd)
 	{
 
-		// Check if we find the same num
-		// in the similar row , we
-		// return false
+		//same number to be added found in the similar row
 		for (int x = 0; x <= 8; x++)
 			if (grid[row][x] == numberToAdd)
 				return false;
-
-		// Check if we find the same num
-		// in the similar column ,
-		// we return false
+        //same number to be added found in the similar column       
 		for (int x = 0; x <= 8; x++)
 			if (grid[x][column] == numberToAdd)
 				return false;
 
-		// Check if we find the same num
-		// in the particular 3*3
-		// matrix, we return false
-		int startRow = row - row % 3, startCol
-									= column - column % 3;
+		//same number found within 3x3 matrix 
+		int startingRow = row - row % 3;
+        int startingColumn = column - column % 3;
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++)
-				if (grid[i + startRow][j + startCol] == numberToAdd)
+				if (grid[i + startingRow][j + startingColumn] == numberToAdd)
 					return false;
 
 		return true;
 	}
 
-	// Driver Code
+	
 	public static void main(String[] args)
 	{
 		int grid[][] = { { 3, 0, 6, 5, 0, 8, 4, 0, 0 },
@@ -120,8 +93,14 @@ public class SudokuSolver {
 						{ 0, 0, 0, 0, 0, 0, 0, 7, 4 },
 						{ 0, 0, 5, 2, 0, 6, 3, 0, 0 } };
 
-		if (solveSudoku(grid, 0, 0))
-			print(grid);
+		if (solve(grid, 0, 0)){
+			System.out.println("Solved Sudoku game:");
+			System.err.println("*****************");
+			showGrid(grid);
+			System.err.println("*****************");
+		}
+
+			
 		else
 			System.out.println("No Solution exists");
 	}
