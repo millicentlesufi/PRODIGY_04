@@ -1,108 +1,152 @@
-//package PRODIGY_04;
-public class SudokuSolver
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+
+public class SudokuSolver extends JFrame
 {
 
-	//size of 2D matrix
-	static int size = 9;
+    private static final int SIZE = 9; // Size of the Sudoku grid (9x9)
+    private JTextField[][] cells = new JTextField[SIZE][SIZE]; // Array to hold text fields for the grid
+    private int[][] grid = {
+        { 3, 0, 6, 5, 0, 8, 4, 0, 0 },
+        { 5, 2, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 8, 7, 0, 0, 0, 0, 3, 1 },
+        { 0, 0, 3, 0, 1, 0, 0, 8, 0 },
+        { 9, 0, 0, 8, 6, 3, 0, 0, 5 },
+        { 0, 5, 0, 0, 9, 0, 6, 0, 0 },
+        { 1, 3, 0, 0, 0, 0, 2, 5, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 7, 4 },
+        { 0, 0, 5, 2, 0, 6, 3, 0, 0 }
+    };
 
-	//solving partially filled sudoku grid
-	static boolean solve(int grid[][], int row, int column)
-	{
-		//if we have reached the 8th row and 9th column to avoid further backtracking
-		if (row == size - 1 && column == size)
-			return true;
+    public SudokuSolver() {
+        setTitle("Sudoku Solver"); 
+        setSize(600, 600); 
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+        setLocationRelativeTo(null); 
 
-		// column value is 9 move to next row, and column start from zero
-		if (column == size)
-        {
-			row++;
-			column = 0;
-		}
+        JPanel panel = new JPanel(); //panel to hold the grid
+        panel.setLayout(new GridLayout(SIZE, SIZE)); 
 
-		// Check if the current position
-		// of the grid already
-		// contains value >0, we iterate
-		// for next column
-		if (grid[row][column] != 0)
-			return solve(grid, row, column + 1);
+        // Initializing the grid with text fields
+        for (int row = 0; row < SIZE; row++) {
+            for (int column = 0; column < SIZE; column++) {
+                cells[row][column] = new JTextField();
+                cells[row][column].setHorizontalAlignment(JTextField.CENTER); 
+                cells[row][column].setFont(new Font("Arial", Font.BOLD, 20)); 
 
-		for (int numberToBeAdded = 1; numberToBeAdded< 10; numberToBeAdded++) {
+                // If the grid cell is not empty, set the text field value and make it non-editable
+                if (grid[row][column] != 0) {
+                    cells[row][column].setText(String.valueOf(grid[row][column]));
+                    cells[row][column].setEditable(false);
+                }
+                panel.add(cells[row][column]); 
 
-			// Check if number can be added that is in the range of 1-9 in the given row, if not move to next column
-			if (canAddToGrid(grid, row, column, numberToBeAdded))
-            {
-                // number added to the current column and row
-				grid[row][column] = numberToBeAdded;
+                // Alternate background color for 3x3 blocks
+                if ((row / 3 + column / 3) % 2 == 0) {
+                    cells[row][column].setBackground(Color.LIGHT_GRAY);
+                } else {
+                    cells[row][column].setBackground(Color.WHITE);
+                }
 
-				// check if can be added to the next column
-				if (solve(grid, row, column + 1))
-					return true;
-			}
-			//resetting the assumption of numberToBeAdded
-			grid[row][column] = 0;
-		}
-		return false;
-	}
+                cells[row][column].setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add a black border to each cell
+            }
+        }
 
-	/* function to print grid */
-	static void showGrid(int[][] grid)
-	{
-		for (int i = 0; i < size; i++)
-        {
-			for (int j = 0; j < size; j++)
-				System.out.print(grid[i][j] + " ");
-			System.out.println();
-		}
-	}
+        JButton solveButton = new JButton("Solve"); // button to solve the Sudoku
+        solveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Attempt to solve the Sudoku and update the grid if successful
+                if (solve(grid, 0, 0)) {
+                    updateGrid();
+                } else {
+                    
+                    JOptionPane.showMessageDialog(null, "No Solution exists");
+                }
+            }
+        });
 
-	//check whether a number can be added at a specific location(row,col)
-	static boolean canAddToGrid(int[][] grid, int row, int column,
-						int numberToAdd)
-	{
+        getContentPane().add(panel, BorderLayout.CENTER); 
+        getContentPane().add(solveButton, BorderLayout.SOUTH); // Add the solve button to the bottom of the window
+    }
 
-		//same number to be added found in the similar row
-		for (int x = 0; x <= 8; x++)
-			if (grid[row][x] == numberToAdd)
-				return false;
-        //same number to be added found in the similar column       
-		for (int x = 0; x <= 8; x++)
-			if (grid[x][column] == numberToAdd)
-				return false;
+    // Update the text fields with the solved grid values
+    private void updateGrid() {
+        for (int row = 0; row < SIZE; row++) {
+            for (int column = 0; column < SIZE; column++) {
+                cells[row][column].setText(String.valueOf(grid[row][column]));
+            }
+        }
+    }
 
-		//same number found within 3x3 matrix 
-		int startingRow = row - row % 3;
-        int startingColumn = column - column % 3;
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++)
-				if (grid[i + startingRow][j + startingColumn] == numberToAdd)
-					return false;
+    // Solving using backtracking
+    private boolean solve(int[][] grid, int row, int column) {
+        // If we have reached the last cell, the Sudoku is solved
+        if (row == SIZE - 1 && column == SIZE) return true;
 
-		return true;
-	}
+        // Move to the next row if we have reached the end of the current row
+        if (column == SIZE) {
+            row++;
+            column = 0;
+        }
 
-	
-	public static void main(String[] args)
-	{
-		int grid[][] = { { 3, 0, 6, 5, 0, 8, 4, 0, 0 },
-						{ 5, 2, 0, 0, 0, 0, 0, 0, 0 },
-						{ 0, 8, 7, 0, 0, 0, 0, 3, 1 },
-						{ 0, 0, 3, 0, 1, 0, 0, 8, 0 },
-						{ 9, 0, 0, 8, 6, 3, 0, 0, 5 },
-						{ 0, 5, 0, 0, 9, 0, 6, 0, 0 },
-						{ 1, 3, 0, 0, 0, 0, 2, 5, 0 },
-						{ 0, 0, 0, 0, 0, 0, 0, 7, 4 },
-						{ 0, 0, 5, 2, 0, 6, 3, 0, 0 } };
+        // Skip the cells that are already filled
+        if (grid[row][column] != 0) return solve(grid, row, column + 1);
 
-		if (solve(grid, 0, 0)){
-			System.out.println("Solved Sudoku game:");
-			System.err.println("*****************");
-			showGrid(grid);
-			System.err.println("*****************");
-		}
+        // Try placing numbers 1-9 in the current cell
+        for (int numberToBeAdded = 1; numberToBeAdded <= SIZE; numberToBeAdded++) {
+            // Check if the number can be placed in the current cell
+            if (canAddToGrid(grid, row, column, numberToBeAdded)) {
+                grid[row][column] = numberToBeAdded; // Place the number
 
-			
-		else
-			System.out.println("No Solution exists");
-	}
-	
+                // Recursively try to solve the rest of the grid
+                if (solve(grid, row, column + 1)) return true;
+
+                grid[row][column] = 0; // Reset the cell if the number does not lead to a solution
+            }
+        }
+        return false; // no number can be placed in the current cell
+    }
+
+    // Check if a number can be placed in a specific cell
+    private boolean canAddToGrid(int[][] grid, int row, int col, int numberToBeAdded) {
+        // Check the row
+        for (int x = 0; x < SIZE; x++) if (grid[row][x] == numberToBeAdded) return false;
+
+        // Check the column
+        for (int x = 0; x < SIZE; x++) if (grid[x][col] == numberToBeAdded) return false;
+
+        // Check the 3x3 subgrid
+        int startRow = row - row % 3, startCol = col - col % 3;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (grid[i + startRow][j + startCol] == numberToBeAdded) return false;
+            }
+        }
+        return true; //the number can be placed in the cell
+    }
+
+    public static void main(String[] args) {
+        // Create and display the Sudoku Solver GUI
+        SwingUtilities.invokeLater(new Runnable() 
+		{
+            @Override
+            public void run() 
+			{
+                new SudokuSolver().setVisible(true);
+            }
+        });
+    }
 }
