@@ -139,7 +139,7 @@ public class SudokuSolver extends JFrame
     }
 
     public static void main(String[] args) {
-        // Create and display the Sudoku Solver GUI
+        // displaying the Sudoku Solver GUI
         SwingUtilities.invokeLater(new Runnable() 
 		{
             @Override
